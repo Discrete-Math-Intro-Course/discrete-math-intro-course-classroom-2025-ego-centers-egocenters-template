@@ -1,0 +1,30 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test on Shuffled Dataset
+      id: test-on-shuffled-dataset
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test on Shuffled Dataset
+        setup-command: pip install pytest networkx scipy
+        command: pytest ego_test.py
+        timeout: 10
+        max-score: 2
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST-ON-SHUFFLED-DATASET_RESULTS: "${{steps.test-on-shuffled-dataset.outputs.result}}"
+      with:
+        runners: test-on-shuffled-dataset
